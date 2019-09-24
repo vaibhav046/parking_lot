@@ -1,7 +1,14 @@
 
-var standard_input = process.stdin;
+const fs = require('fs'),
+    path = require('path'),
+    filePath = path.join(__dirname, '/functional_spec/fixtures/file_input.txt');
+
+const standard_input = process.stdin;
 // Set input character encoding.
 standard_input.setEncoding('utf-8');
+
+const executor = require('./utils/executor-util');
+
 
 class ParkingLot {
 
@@ -17,9 +24,9 @@ class ParkingLot {
     }
 
     /**
+     * Creates the parking spaces.
      *
-     *
-     * @param {*} n
+     * @param {*} arr --> bound parameter for the parking lot array.
      * @memberof ParkingLot
      */
     _createParkingLot(arr) {
@@ -32,9 +39,9 @@ class ParkingLot {
 
 
     /**
+     * Parks a car to the first available slot.
      *
-     *
-     * @param {*} instruction
+     * @param {*} instruction --> park <car-details>
      * @memberof ParkingLot
      */
     _park(instruction) {
@@ -62,9 +69,9 @@ class ParkingLot {
 
 
     /**
+     * Remove the cark from parking lot.
      *
-     *
-     * @param {*} instruction
+     * @param {*} instruction --> leave <slot_number>
      * @memberof ParkingLot
      */
     _unpark(instruction) {
@@ -78,7 +85,7 @@ class ParkingLot {
 
 
     /**
-     *
+     * Gets the current status for the parking lot.
      *
      * @memberof ParkingLot
      */
@@ -94,22 +101,17 @@ class ParkingLot {
     /**
      *
      *
-     * @param {*} instruction
+     * @param {*} instruction --> <registration_numbers/slot_numbers for cars with color/registration_number>
      * @memberof ParkingLot
      */
     _searchCars(instruction) {
         let colouredSlots = [];
         let colouredRegNos = [];
-        let found = false;
+        let found;
         [...this.arr.entries()].map((x) => {
-            if (this.searchForRegNumbers) {
-                if (x[1].color === instruction) {
-                    colouredRegNos.push(x[1].registration_number);
-                    found = true;
-                }
-            } else {
+            if (!this.searchForRegNumbers) {
                 if (x[1].registration_number === instruction) {
-                    console.log(`slot_number_for_registration_number ${instruction}`);
+                    console.log(x[0]);
                     found = true;
                     return;
                 }
@@ -121,18 +123,24 @@ class ParkingLot {
                     found = false;
                 }
             }
-        });
+            if (this.searchForRegNumbers) {
+                if (x[1].color === instruction) {
+                    colouredRegNos.push(x[1].registration_number);
+                    found = true;
+                }
+            }
 
+        });
         if (colouredSlots.length > 0) {
             found = true;
-            console.log(`slot_numbers_for_cars_with_colour ${instruction}`);
+            // console.log(`slot_numbers_for_cars_with_colour ${instruction}`);
             console.log(colouredSlots.join(','));
         }
         if (colouredRegNos.length > 0) {
             found = true;
             console.log(colouredRegNos.join(','));
         }
-        if (!found) {
+        if (found == false) {
             console.log(`not found`);
         }
     }
@@ -153,35 +161,26 @@ class ParkingLot {
 
 
 let parkingLot = new ParkingLot();
+//Asks use to switch between interactive/file read mode.
+console.log("Please enter the following options for readModes(--file/default is interactive)")
 standard_input.on('data', (data) => {
     // User input exit.
     if (data === 'exit\n') {
         // Program exit.
         console.log("User input complete, program exit.");
         process.exit();
-    } else {
-        // console.log(data);
-        if (data.includes('create')) {
-            let inst = data.split(' ');
-            parkingLot.n = Number(inst[inst.length - 1]);
-            parkingLot.aggreagator(data, parkingLot._createParkingLot);
-        }
-        else if (data.includes('park'))
-            parkingLot.aggreagator(data, parkingLot._park);
-
-        else if (data.includes('status'))
-            parkingLot.aggreagator(data, parkingLot._returnStatus);
-
-        else if (data.includes('leave'))
-            parkingLot.aggreagator(data, parkingLot._unpark);
-
-        else {
-            if (data.includes('registration_numbers_for_cars_with_colour')) {
-                parkingLot.searchForRegNumbers = true
-            }
-            let inst = data.split(' ');
-            parkingLot.aggreagator(inst[inst.length - 1], parkingLot._searchCars);
-        }
-
+    } else if (data === '--file\n') {
+        fs.readFile(filePath, { encoding: 'utf-8' }, (err, data) => {
+            if (err) throw err;
+            console.log(data);
+            let dataArray = data.split('\n');
+            dataArray.forEach((res) => {
+                executor(res, parkingLot);
+            })
+        });
+    }
+    else {
+        executor(data, parkingLot);
     }
 });
+
