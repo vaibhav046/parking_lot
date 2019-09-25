@@ -10,8 +10,17 @@ standard_input.setEncoding('utf-8');
 const executor = require('./utils/executor-util');
 
 
+/**
+ * Parking lot Class
+ *
+ * @class ParkingLot
+ */
 class ParkingLot {
 
+    /**
+     *Creates an instance of ParkingLot.
+     * @memberof ParkingLot
+     */
     constructor() {
         this.arr = new Map();
         this.n = 0;
@@ -147,10 +156,10 @@ class ParkingLot {
 
 
     /**
+     * Callback higher order function.
      *
-     *
-     * @param {*} instruction
-     * @param {*} callback
+     * @param {*} instruction --> any of the above instructions
+     * @param {*} callback --> callback function 
      * @returns
      * @memberof ParkingLot
      */
